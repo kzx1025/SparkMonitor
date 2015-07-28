@@ -1,0 +1,544 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <script type="text/javascript" src="/static/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="/static/highcharts.js"></script>
+    <script type="text/javascript" src="/static/exporting.js"></script>
+    <script type="text/javascript" src="/static/data.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var finalx = []; //x 轴内容
+            $('#container0').highcharts({
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'column',
+                    events: {
+                        load: function () {
+
+                            var a = this.series[0];
+                            var b = this.series[1];
+                            var flint = [];
+                            var spark = [];
+                            var xtext = [];
+                            var x = this.xAxis[0];
+                            xtext[0] = 'Total Time'
+
+                            // 定时器，每隔1000ms刷新一次
+                            setInterval(function () {
+
+                                        jQuery.getJSON('./get_json/', null,
+                                                function (data) {
+                                                    if (data != null) {
+                                                        var spark_stages_num = data.Spark.stages.length;
+                                                        var flint_stages_num = data.Flint.stages.length;
+                                                        spark[0] = data.Spark.total_time;
+                                                        flint[0] = data.Flint.total_time;
+                                                        if (spark_stages_num <= flint_stages_num) {
+                                                            for (var i = 0; i < flint_stages_num; i++) {
+                                                                xtext[i + 1] = 'Stage' + (data.Flint.stages[i].stage_id).toString();
+                                                                var spark_y = data.Spark.stages[i].stage_duration;
+                                                                if ((spark_y == null) || (spark_y == 0)) {
+                                                                    spark[i + 1] = 0;
+                                                                } else {
+                                                                    spark[i + 1] = spark_y;
+                                                                }
+
+                                                                flint[i + 1] = data.Flint.stages[i].stage_duration;
+                                                            }
+                                                        } else {
+                                                            for (var i = 0; i < spark_stages_num; i++) {
+                                                                xtext[i + 1] = 'Stage' + (data.Spark.stages[i].stage_id).toString();
+                                                                var flint_y = data.Flint.stages[i].stage_duration;
+                                                                if ((flint_y == null) || (flint_y == 0)) {
+                                                                    flint[i + 1] = 0;
+                                                                } else {
+                                                                    flint[i + 1] = flint_y;
+                                                                }
+
+                                                                spark[i + 1] = data.Spark.stages[i].stage_duration;
+                                                            }
+                                                        }
+
+                                                        if (data.Spark != null) {
+                                                            a.setData(spark);
+                                                        }
+                                                        if (data.Flint != null) {
+                                                            b.setData(flint);
+                                                        }
+                                                        finalx = xtext;
+                                                        x.setCategories(finalx);
+                                                        //x.update();
+
+                                                    }
+
+                                                });
+
+
+                                        // a.setData(y);
+                                        //b.setData(y);
+
+                                    },
+                                    2000/*启动间隔，单位ms*/
+                            );
+                        }
+
+                    }
+                },
+
+                title: {
+                    text: 'Flint Compare With Spark(Time Cost)'
+                },
+                subtitle: {
+                    text: 'Source: xxx'
+                },
+                xAxis: {
+                    /**
+                     categories: [
+                     'Stage0',
+                     'Stage1',
+                     'Stage2',
+                     'Stage3'
+                     ]**/
+                    //categories: finalx
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Time Cost (min)'
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} min</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                series: [{
+                    name: 'Spark',
+                    //  data: [49.9, 71.5, 106.4, 129.2]
+
+                }, {
+                    name: 'Flint',
+                    //  data: [42.4, 33.2, 34.5, 39.7]
+
+                }]
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            var finalx = []; //x 轴内容
+            $('#container1').highcharts({
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'column',
+                    events: {
+                        load: function () {
+
+                            var a = this.series[0];
+                            var b = this.series[1];
+                            var flint = [];
+                            var spark = [];
+                            var xtext = [];
+                            var x = this.xAxis[0];
+
+                            // 定时器，每隔1000ms刷新一次
+                            setInterval(function () {
+
+                                        jQuery.getJSON('./get_json/', null,
+                                                function (data) {
+                                                    if (data != null) {
+                                                        var spark_stages_num = data.Spark.stages.length;
+                                                        var flint_stages_num = data.Flint.stages.length;
+                                                        if (spark_stages_num <= flint_stages_num) {
+                                                            for (var i = 0; i < flint_stages_num; i++) {
+                                                                xtext[i] = 'Stage' + (data.Flint.stages[i].stage_id).toString();
+                                                                var spark_y = data.Spark.stages[i].tasks_percent;
+                                                                if ((spark_y == null) || (spark_y == 0)) {
+                                                                    spark[i] = 0.0;
+                                                                } else {
+                                                                    spark[i] = spark_y;
+                                                                }
+
+                                                                flint[i] = data.Flint.stages[i].tasks_percent;
+                                                            }
+                                                        } else {
+                                                            for (var i = 0; i < spark_stages_num; i++) {
+                                                                xtext[i] = 'Stage' + (data.Spark.stages[i].stage_id).toString();
+                                                                var flint_y = data.Flint.stages[i].tasks_percent;
+                                                                if ((flint_y == null) || (flint_y == 0)) {
+                                                                    flint[i] = 0.0;
+                                                                } else {
+                                                                    flint[i] = flint_y;
+                                                                }
+
+                                                                spark[i] = data.Spark.stages[i].tasks_percent;
+                                                            }
+                                                        }
+
+                                                        if (data.Spark != null) {
+                                                            a.setData(spark);
+                                                        }
+                                                        if (data.Flint != null) {
+                                                            b.setData(flint);
+                                                        }
+                                                        finalx = xtext;
+                                                        x.setCategories(finalx);
+                                                        //x.update();
+
+                                                    } else {
+                                                        //tp update
+                                                    }
+
+                                                });
+
+
+                                        // a.setData(y);
+                                        //b.setData(y);
+
+                                    },
+                                    2000/*启动间隔，单位ms*/
+                            );
+                        }
+
+                    }
+                },
+
+                title: {
+                    text: 'Flint Compare With Spark(Task Completed_Percent)'
+                },
+                subtitle: {
+                    text: 'Source: xxx'
+                },
+                xAxis: {
+                    /**
+                     categories: [
+                     'Stage0',
+                     'Stage1',
+                     'Stage2',
+                     'Stage3'
+                     ]**/
+                    //categories: finalx
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Tasks Completed (%)'
+                    },
+                    max: 100
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} %</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                series: [{
+                    name: 'Spark',
+                    //  data: [49.9, 71.5, 106.4, 129.2]
+
+                }, {
+                    name: 'Flint',
+                    //  data: [42.4, 33.2, 34.5, 39.7]
+
+                }]
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            $('#container2').highcharts({
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'spline',
+                    marginRight: 150,
+                    marginLeft: 150,
+                    marginBottom: 25,
+                    animation: Highcharts.svg,
+
+                    events: {
+                        load: function () {
+
+                            // 若有第3条线，则添加
+                            // var series_other_property = this.series[2]
+                            // 并在 series: [] 中添加相应的 (name, data) 对
+                            var spark_cpu = this.series[0];
+                            var flint_cpu = this.series[1];
+
+                            // 定时器，每隔1000ms刷新曲线一次
+                            setInterval(function () {
+
+                                        // 使用JQuery从后台Servlet获取
+                                        // JSON格式的数据，
+                                        // 如 "{"cpu": 80,"mem": 10}"
+                                        jQuery.getJSON('./get_cpu_mem/', null,
+                                                function (data) {
+
+                                                    // 当前时间，为x轴数据
+                                                    var x = (new Date()).getTime();
+
+                                                    // y轴数据
+                                                    var cpu1 = data.spark_cpu;
+                                                    var cpu2 = data.flint_cpu;
+
+                                                    // 更新曲线数据
+                                                    spark_cpu.addPoint([x, cpu1], true, true);
+                                                    flint_cpu.addPoint([x, cpu2], true, true);
+                                                });
+                                    },
+                                    2000/*启动间隔，单位ms*/
+                            );
+                        }
+                    }
+                },
+                title: {
+                    text: 'CPU 使用率(%)',
+                    x: -20
+                },
+                xAxis: {
+                    type: 'datetime',
+                    tickPixelInterval: 150
+                },
+                yAxis: {
+                    title: {
+                        text: 'CPU 使用率(%)'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }],
+                    max: 100,
+                    min: 0
+                },
+                tooltip: {
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} %</b></td></tr>'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: -10,
+                    y: 100,
+                    borderWidth: 0
+                },
+                series: [
+                    // 第1条曲线的(name, data)对
+                    {
+                        name: 'Spark',
+                        data: (function () {
+                            var data = [],
+                                    time = (new Date()).getTime(),
+                                    i;
+
+                            // 给曲线y值赋初值0
+                            for (i = -20; i <= 0; i++) {
+                                data.push({
+                                    x: time + i * 1000,
+                                    y: 0
+                                });
+                            }
+                            return data;
+                        })()
+                    },
+
+                    // 第2条曲线的(name, data)对
+                    {
+                        name: 'Flint',
+                        data: (function () {
+                            var data = [],
+                                    time = (new Date()).getTime(),
+                                    i;
+
+                            // 给曲线y值赋初值0
+                            for (i = -20; i <= 0; i++) {
+                                data.push({
+                                    x: time + i * 1000,
+                                    y: 0
+                                });
+                            }
+                            return data;
+                        })()
+                    },
+                ]
+            });
+        });
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            $('#container3').highcharts({
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'spline',
+                    marginRight: 150,
+                    marginLeft: 150,
+                    marginBottom: 25,
+                    animation: Highcharts.svg,
+
+                    events: {
+                        load: function () {
+
+                            // 若有第3条线，则添加
+                            // var series_other_property = this.series[2]
+                            // 并在 series: [] 中添加相应的 (name, data) 对
+                            var spark_mem = this.series[0];
+                            var flint_mem = this.series[1];
+
+                            // 定时器，每隔1000ms刷新曲线一次
+                            setInterval(function () {
+
+                                        // 使用JQuery从后台Servlet获取
+                                        // JSON格式的数据，
+                                        // 如 "{"cpu": 80,"mem": 10}"
+                                        jQuery.getJSON('./get_cpu_mem/', null,
+                                                function (data) {
+
+                                                    // 当前时间，为x轴数据
+                                                    var x = (new Date()).getTime();
+
+                                                    // y轴数据
+                                                    var mem1 = data.spark_mem;
+                                                    var mem2 = data.flint_mem;
+
+                                                    // 更新曲线数据
+                                                    spark_mem.addPoint([x, mem1], true, true);
+                                                    flint_mem.addPoint([x, mem2], true, true);
+                                                });
+                                    },
+                                    2000/*启动间隔，单位ms*/
+                            );
+                        }
+                    }
+                },
+                title: {
+                    text: ' Memory 使用率(%)',
+                    x: -20
+                },
+                xAxis: {
+                    type: 'datetime',
+                    tickPixelInterval: 150
+                },
+                yAxis: {
+                    title: {
+                        text: ' Memory 使用率(%)'
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }],
+                    max: 100,
+                    min: 0
+                },
+                tooltip: {
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} %</b></td></tr>'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: -10,
+                    y: 100,
+                    borderWidth: 0
+                },
+                series: [
+                    // 第1条曲线的(name, data)对
+                    {
+                        name: 'Spark',
+                        data: (function () {
+                            var data = [],
+                                    time = (new Date()).getTime(),
+                                    i;
+
+                            // 给曲线y值赋初值0
+                            for (i = -20; i <= 0; i++) {
+                                data.push({
+                                    x: time + i * 1000,
+                                    y: 0
+                                });
+                            }
+                            return data;
+                        })()
+                    },
+
+                    // 第2条曲线的(name, data)对
+                    {
+                        name: 'Flint',
+                        data: (function () {
+                            var data = [],
+                                    time = (new Date()).getTime(),
+                                    i;
+
+                            // 给曲线y值赋初值0
+                            for (i = -20; i <= 0; i++) {
+                                data.push({
+                                    x: time + i * 1000,
+                                    y: 0
+                                });
+                            }
+                            return data;
+                        })()
+                    },
+                ]
+            });
+        });
+    </script>
+    <style type="text/css">
+        .div1 {
+            width: 600px;
+            height: 500px;
+            float: left;
+            position: relative;
+
+            margin-left: 20%;
+        }
+
+        .div2 {
+            width: 600px;
+            height: 500px;
+            float: left;
+            position: relative;
+            left: 0px
+        }
+    </style>
+</head>
+<body>
+<h1>{{ ctx }}</h1>
+
+<div id="container0" style="margin:0 auto;max-width:1000px;height:400px"></div>
+<div id="container1" style="margin:0 auto;max-width:1000px;height:400px"></div>
+<div id="container2" class = div1 style="max-width: 47%; height: 300px;margin:50px auto auto auto"></div>
+<div id="container3" class = div2 style="max-width: 47%; height: 300px;margin:50px auto 50px auto"></div>
+</body>
+</html>
