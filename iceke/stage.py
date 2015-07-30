@@ -10,6 +10,7 @@ class Stage(object):
         self.__shuffle_read = ''
         self.__shuffle_write = ''
         self.__submit_time = ''
+        self.__gc_time = 0.0
 
     def object2dict(self, obj):
         # convert object to a dict
@@ -18,6 +19,12 @@ class Stage(object):
         d['__module__'] = obj.__module__
         d.update(obj.__dict__)
         return d
+
+    def get_gc_time(self):
+        return self.__gc_time
+
+    def set_gc_time(self, gc_time):
+        self.__gc_time = gc_time
 
     def get_stage_id(self):
         return self.__stage_id

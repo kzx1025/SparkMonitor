@@ -1,4 +1,4 @@
-from flask import Flask, render_template,abort
+from flask import Flask, render_template
 from iceke.worm import Worm
 import json
 from iceke.util import Util
@@ -12,28 +12,19 @@ spark_stage_url = 'http://11.11.0.55:4040/stages/'
 
 
 @app.route('/')
-def show_spark():
-    return render_template('show_spark.html', ctx='ab')
+def show_gc():
+    return render_template('show_gc.html', ctx='ab')
 
 
-@app.route('/show_error/')
-def show_error():
-    return render_template('error.html')
-
-
-@app.route('/get_json/')
-def get_json():
-    """
-    you can transform the ip of node which you want to monitor
-    :return:
-    """
+@app.route('/get_gc/')
+def get_gc():
     final_dict = {}
     try:
-       spark_worm = Worm(spark_url, spark_stage_url, True, False, "Spark")
+       spark_worm = Worm(spark_url, spark_stage_url, True, True, "Spark")
        running_spark = spark_worm.get_running_spark()
        if running_spark is None:
            running_spark = spark_worm.get_finish_spark()  #get the first finished
-       flint_worm = Worm(flint_url, flint_stage_url, True, False,  "Flint")
+       flint_worm = Worm(flint_url, flint_stage_url, True, True,  "Flint")
        running_flint = flint_worm.get_running_spark()
        if running_flint is None:
            running_flint = flint_worm.get_finish_spark()
@@ -51,21 +42,6 @@ def get_json():
     final_json = json.dumps(final_dict)
     print(final_json)
     return final_json
-
-
-@app.route('/get_cpu_mem/')
-def get_cpu_mem():
-    spark_param = Worm.get_html('http://11.11.0.56:5000/', True, 6).split('#')
-    spark_cpu = float(spark_param[0])
-    spark_mem = float(spark_param[1])
-    flint_param = Worm.get_html('http://11.11.0.65:5000/', True, 6).split('#')
-    flint_cpu = float(flint_param[0])
-    flint_mem = float(flint_param[1])
-    fuck = {'spark_cpu': spark_cpu, 'spark_mem': spark_mem, 'flint_cpu': flint_cpu, 'flint_mem': flint_mem}
-    print fuck
-    shit = json.dumps(fuck)
-
-    return shit
 
 
 def format_spark_json(running_spark):
@@ -98,4 +74,4 @@ def format_spark_json(running_spark):
          return None
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=7000)

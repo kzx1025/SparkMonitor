@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>show gc</title>
+    <link rel="stylesheet" type="text/css" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <script type="text/javascript" src="/static/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="/static/highcharts.js"></script>
+    <script type="text/javascript" src="/static/exporting.js"></script>
+    <script type="text/javascript" src="/static/data.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            var finalx = []; //x 轴内容
+            $('#container2').highcharts({
+                credits: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'column',
+                    events: {
+                        load: function () {
+
+                            var a = this.series[0];
+                            var b = this.series[1];
+                            var flint = [];
+                            var spark = [];
+                            var xtext = [];
+                            var x = this.xAxis[0];
+                            xtext[0] = 'Total GC Time'
+
+
+                            // 定时器，每隔1000ms刷新一次
+                            setInterval(function () {
+
+                                        jQuery.getJSON('./get_gc/', null,
+                                                function (data) {
+                                                      if("err" in data){
+                                                        window.location.href='./show_error/';
+                                                    }
+                                                    spark[0] = 0.0;
+                                                    flint[0] = 0.0;
+                                                    if (data != null) {
+                                                            var spark_stages_num = 0;
+                                                        var flint_stages_num = 0;
+                                                        if (data.flint != 'none') {
+                                                            flint_stages_num = data.flint.stages.length;
+                                                        }
+                                                        if (data.spark != 'none') {
+                                                            spark_stages_num = data.spark.stages.length;
+                                                        }
+                                                        if (spark_stages_num <= flint_stages_num) {
+                                                            for (var i = 0; i < flint_stages_num; i++) {
+                                                                xtext[i + 1] = 'Stage' + (data.flint.stages[i].stage_id).toString();
+                                                                 var spark_y = 0;
+                                                                if (data.spark.stages == null || data.spark.stages[i] == null) {
+                                                                    spark_y = 0;
+
+                                                                } else {
+                                                                    spark_y = data.spark.stages[i].gc_time;
+
+                                                                }
+                                                                if ((spark_y == null) || (spark_y == 0)) {
+                                                                    spark[i + 1] = 0;
+                                                                } else {
+                                                                    spark[i + 1] = spark_y;
+                                                                }
+
+                                                                flint[i + 1] = data.flint.stages[i].gc_time;
+                                                                spark[0] = spark[0] + spark[i + 1];
+                                                                flint[0] = flint[0] + flint[i + 1];
+                                                            }
+                                                        } else {
+                                                            for (var i = 0; i < spark_stages_num; i++) {
+                                                                xtext[i + 1] = 'Stage' + (data.spark.stages[i].stage_id).toString();
+                                                                var flint_y = 0;
+                                                                if (data.flint.stages == null || data.flint.stages[i] == null) {
+                                                                    flint_y = 0;
+
+                                                                } else {
+                                                                    flint_y = data.flint.stages[i].gc_time;
+
+                                                                }
+                                                                if ((flint_y == null) || (flint_y == 0)) {
+                                                                    flint[i + 1] = 0;
+                                                                } else {
+                                                                    flint[i + 1] = flint_y;
+                                                                }
+
+                                                                spark[i + 1] = data.spark.stages[i].gc_time;
+                                                                spark[0] = spark[0] + spark[i + 1];
+                                                                flint[0] = flint[0] + flint[i + 1];
+                                                            }
+                                                        }
+
+                                                        if (data.spark != null) {
+                                                            a.setData(spark);
+                                                        }
+                                                        if (data.flint != null) {
+                                                            b.setData(flint);
+                                                        }
+                                                        finalx = xtext;
+                                                        x.setCategories(finalx);
+                                                        //x.update();
+
+                                                    }
+
+                                                });
+
+
+                                        // a.setData(y);
+                                        //b.setData(y);
+
+                                    },
+                                    9000/*启动间隔，单位ms*/
+                            );
+                        }
+
+                    }
+                },
+
+                title: {
+                    text: 'Flint Compare With Spark(GC Time)'
+                },
+                subtitle: {
+                    text: 'Source: xxx'
+                },
+                xAxis: {
+                    /**
+                     categories: [
+                     'Stage0',
+                     'Stage1',
+                     'Stage2',
+                     'Stage3'
+                     ]**/
+                    //categories: finalx
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'GC Time (s)'
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} s</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                series: [{
+                    name: 'Spark',
+                    //  data: [49.9, 71.5, 106.4, 129.2]
+
+                }, {
+                    name: 'Flint',
+                    //  data: [42.4, 33.2, 34.5, 39.7]
+
+                }]
+            });
+        });
+    </script>
+</head>
+<body>
+
+<div id="container2" style="margin:0 auto;max-width:1000px;height:400px"></div>
+</body>
+</html>

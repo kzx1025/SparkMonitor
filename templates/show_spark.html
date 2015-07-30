@@ -2,7 +2,7 @@
         "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <title></title>
+    <title>show spark</title>
     <link rel="stylesheet" type="text/css" href="/static/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <script type="text/javascript" src="/static/jquery-1.8.3.min.js"></script>
@@ -34,41 +34,70 @@
 
                                         jQuery.getJSON('./get_json/', null,
                                                 function (data) {
+                                                    //var data  = eval(json);
+                                                    if ("err" in data) {
+                                                        window.location.href = './show_error/';
+                                                    }
                                                     if (data != null) {
-                                                        var spark_stages_num = data.Spark.stages.length;
-                                                        var flint_stages_num = data.Flint.stages.length;
-                                                        spark[0] = data.Spark.total_time;
-                                                        flint[0] = data.Flint.total_time;
+                                                        var spark_stages_num = 0;
+                                                        var flint_stages_num = 0;
+                                                        spark[0] = 0.0;
+                                                        flint[0] = 0.0;
+                                                        if (data.flint != 'none') {
+                                                            flint_stages_num = data.flint.stages.length;
+                                                            flint[0] = data.flint.total_time;
+                                                        }
+                                                        if (data.spark != 'none') {
+                                                            spark_stages_num = data.spark.stages.length;
+                                                            spark[0] = data.spark.total_time;
+                                                        }
+
+
                                                         if (spark_stages_num <= flint_stages_num) {
                                                             for (var i = 0; i < flint_stages_num; i++) {
-                                                                xtext[i + 1] = 'Stage' + (data.Flint.stages[i].stage_id).toString();
-                                                                var spark_y = data.Spark.stages[i].stage_duration;
+                                                                xtext[i + 1] = 'Stage' + (data.flint.stages[i].stage_id).toString();
+                                                                var spark_y = 0;
+                                                                if (data.spark.stages == null || data.spark.stages[i] == null) {
+                                                                    spark_y = 0;
+
+                                                                } else {
+                                                                    spark_y = data.spark.stages[i].stage_duration;
+
+                                                                }
+
                                                                 if ((spark_y == null) || (spark_y == 0)) {
                                                                     spark[i + 1] = 0;
                                                                 } else {
                                                                     spark[i + 1] = spark_y;
                                                                 }
 
-                                                                flint[i + 1] = data.Flint.stages[i].stage_duration;
+                                                                flint[i + 1] = data.flint.stages[i].stage_duration;
                                                             }
                                                         } else {
                                                             for (var i = 0; i < spark_stages_num; i++) {
-                                                                xtext[i + 1] = 'Stage' + (data.Spark.stages[i].stage_id).toString();
-                                                                var flint_y = data.Flint.stages[i].stage_duration;
+                                                                xtext[i + 1] = 'Stage' + (data.spark.stages[i].stage_id).toString();
+                                                                var flint_y = 0;
+                                                                if (data.flint.stages == null || data.flint.stages[i] == null) {
+                                                                    flint_y = 0;
+
+                                                                } else {
+                                                                    flint_y = data.flint.stages[i].stage_duration;
+
+                                                                }
                                                                 if ((flint_y == null) || (flint_y == 0)) {
                                                                     flint[i + 1] = 0;
                                                                 } else {
                                                                     flint[i + 1] = flint_y;
                                                                 }
 
-                                                                spark[i + 1] = data.Spark.stages[i].stage_duration;
+                                                                spark[i + 1] = data.spark.stages[i].stage_duration;
                                                             }
                                                         }
 
-                                                        if (data.Spark != null) {
+                                                        if (data.spark != 'none') {
                                                             a.setData(spark);
                                                         }
-                                                        if (data.Flint != null) {
+                                                        if (data.flint != 'none') {
                                                             b.setData(flint);
                                                         }
                                                         finalx = xtext;
@@ -84,7 +113,7 @@
                                         //b.setData(y);
 
                                     },
-                                    2000/*启动间隔，单位ms*/
+                                    3000/*启动间隔，单位ms*/
                             );
                         }
 
@@ -163,39 +192,61 @@
 
                                         jQuery.getJSON('./get_json/', null,
                                                 function (data) {
+                                                    //var data  = eval(json);
                                                     if (data != null) {
-                                                        var spark_stages_num = data.Spark.stages.length;
-                                                        var flint_stages_num = data.Flint.stages.length;
+                                                        var spark_stages_num = 0;
+                                                        var flint_stages_num = 0;
+                                                        if (data.flint != 'none') {
+                                                            flint_stages_num = data.flint.stages.length;
+                                                        }
+                                                        if (data.spark != 'none') {
+                                                            spark_stages_num = data.spark.stages.length;
+                                                        }
+
                                                         if (spark_stages_num <= flint_stages_num) {
                                                             for (var i = 0; i < flint_stages_num; i++) {
-                                                                xtext[i] = 'Stage' + (data.Flint.stages[i].stage_id).toString();
-                                                                var spark_y = data.Spark.stages[i].tasks_percent;
+                                                                xtext[i] = 'Stage' + (data.flint.stages[i].stage_id).toString();
+                                                                var spark_y = 0;
+                                                                if (data.spark.stages == null || data.spark.stages[i] == null) {
+                                                                    spark_y = 0;
+
+                                                                } else {
+                                                                    spark_y = data.spark.stages[i].tasks_percent;
+
+                                                                }
                                                                 if ((spark_y == null) || (spark_y == 0)) {
                                                                     spark[i] = 0.0;
                                                                 } else {
                                                                     spark[i] = spark_y;
                                                                 }
 
-                                                                flint[i] = data.Flint.stages[i].tasks_percent;
+                                                                flint[i] = data.flint.stages[i].tasks_percent;
                                                             }
                                                         } else {
                                                             for (var i = 0; i < spark_stages_num; i++) {
-                                                                xtext[i] = 'Stage' + (data.Spark.stages[i].stage_id).toString();
-                                                                var flint_y = data.Flint.stages[i].tasks_percent;
+                                                                xtext[i] = 'Stage' + (data.spark.stages[i].stage_id).toString();
+                                                                var flint_y = 0;
+                                                                if (data.flint.stages == null || data.flint.stages[i] == null) {
+                                                                    flint_y = 0;
+
+                                                                } else {
+                                                                    flint_y = data.flint.stages[i].tasks_percent;
+
+                                                                }
                                                                 if ((flint_y == null) || (flint_y == 0)) {
                                                                     flint[i] = 0.0;
                                                                 } else {
                                                                     flint[i] = flint_y;
                                                                 }
 
-                                                                spark[i] = data.Spark.stages[i].tasks_percent;
+                                                                spark[i] = data.spark.stages[i].tasks_percent;
                                                             }
                                                         }
 
-                                                        if (data.Spark != null) {
+                                                        if (data.spark != 'none') {
                                                             a.setData(spark);
                                                         }
-                                                        if (data.Flint != null) {
+                                                        if (data.flint != 'none') {
                                                             b.setData(flint);
                                                         }
                                                         finalx = xtext;
@@ -213,7 +264,7 @@
                                         //b.setData(y);
 
                                     },
-                                    2000/*启动间隔，单位ms*/
+                                    3000/*启动间隔，单位ms*/
                             );
                         }
 
@@ -269,9 +320,10 @@
             });
         });
     </script>
+
     <script type="text/javascript">
         $(function () {
-            $('#container2').highcharts({
+            $('#container3').highcharts({
                 credits: {
                     enabled: false
                 },
@@ -394,7 +446,7 @@
 
     <script type="text/javascript">
         $(function () {
-            $('#container3').highcharts({
+            $('#container4').highcharts({
                 credits: {
                     enabled: false
                 },
@@ -534,11 +586,12 @@
     </style>
 </head>
 <body>
-<h1>{{ ctx }}</h1>
+<h1><img src="/static/flint.png"  alt="Flint mark" height="150" width="200" /></h1>
 
 <div id="container0" style="margin:0 auto;max-width:1000px;height:400px"></div>
 <div id="container1" style="margin:0 auto;max-width:1000px;height:400px"></div>
-<div id="container2" class = div1 style="max-width: 47%; height: 300px;margin:50px auto auto auto"></div>
-<div id="container3" class = div2 style="max-width: 47%; height: 300px;margin:50px auto 50px auto"></div>
+
+<div id="container3" class=div1 style="max-width: 47%; height: 300px;margin:50px auto auto auto"></div>
+<div id="container4" class=div2 style="max-width: 47%; height: 300px;margin:50px auto 50px auto"></div>
 </body>
 </html>
